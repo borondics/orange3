@@ -4,7 +4,7 @@ Canvas Graphics View
 import logging
 
 from AnyQt.QtWidgets import QGraphicsView
-from AnyQt.QtGui import QCursor, QIcon
+from AnyQt.QtGui import QCursor, QIcon, QTransform
 from AnyQt.QtCore import Qt, QRect, QSize, QRectF, QPoint, QTimer
 
 log = logging.getLogger(__name__)
@@ -24,6 +24,8 @@ class CanvasView(QGraphicsView):
         self.__autoScrollMargin = 16
         self.__autoScrollTimer = QTimer(self)
         self.__autoScrollTimer.timeout.connect(self.__autoScrollAdvance)
+
+        self.__scale = 1.0
 
     def setScene(self, scene):
         QGraphicsView.setScene(self, scene)
@@ -62,6 +64,16 @@ class CanvasView(QGraphicsView):
             self.__stopAutoScroll()
 
         return QGraphicsView.mouseReleaseEvent(self, event)
+
+    def wheelEvent(self, event):
+        if event.modifiers() & Qt.ControlModifier:
+            self.__scale += event.angleDelta().x() / 50
+            self.__scale = min(2, max(self.__scale, 0.5))
+            transform = QTransform()
+            transform.scale(self.__scale, self.__scale)
+            self.setTransform(transform)
+        else:
+            super().wheelEvent(event)
 
     def __shouldAutoScroll(self, pos):
         if self.__autoScroll:
