@@ -66,9 +66,10 @@ class CanvasView(QGraphicsView):
         return QGraphicsView.mouseReleaseEvent(self, event)
 
     def wheelEvent(self, event):
+        self.setTransformationAnchor(2) # use mouse position as anchor while zooming
         if event.modifiers() & Qt.ControlModifier:
-            self.__scale += event.angleDelta().x() / 50
-            self.__scale = min(2, max(self.__scale, 0.5))
+            self.__scale += min(50, event.angleDelta().y()) / 120
+            self.__scale = min(1.5, max(self.__scale, 0.25))
             transform = QTransform()
             transform.scale(self.__scale, self.__scale)
             self.setTransform(transform)
