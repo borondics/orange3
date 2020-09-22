@@ -52,9 +52,11 @@ class OWNeighbors(OWWidget):
     distance_index: int
 
     n_neighbors = Setting(10)
+    n_max_neighbors = Setting(0)
     distance_index = Setting(0)
     exclude_reference = Setting(True)
     auto_apply = Setting(True)
+    spin_checked = Setting(True)
 
     want_main_area = False
     resizing_enabled = False
@@ -70,16 +72,17 @@ class OWNeighbors(OWWidget):
         box = gui.vBox(self.controlArea, box=True)
         gui.comboBox(
             box, self, "distance_index", orientation=Qt.Horizontal,
-            label="Distance: ", items=[d[0] for d in METRICS],
+            label="Distance metric: ", items=[d[0] for d in METRICS],
             callback=self.recompute)
         gui.spin(
-            box, self, "n_neighbors", label="Number of neighbors:",
-            step=1, spinType=int, minv=0, maxv=100,
+            box, self, "n_neighbors", label="Limit number of neighbors to:",
+            step=1, spinType=int, minv=0, maxv=1e8, checked='spin_checked',
             # call apply by gui.auto_commit, pylint: disable=unnecessary-lambda
+            checkCallback=lambda: self.apply(),
             callback=lambda: self.apply())
         gui.checkBox(
             box, self, "exclude_reference",
-            label="Exclude rows (equal to) references",
+            label="Exclude rows almost equal to references (1E-5 tolerance)",
             # call apply by gui.auto_commit, pylint: disable=unnecessary-lambda
             callback=lambda: self.apply())
 
@@ -163,7 +166,11 @@ class OWNeighbors(OWWidget):
         if self.exclude_reference:
             non_ref = dist > 1e-5
             skip = len(dist) - non_ref.sum()
-            up_to = min(self.n_neighbors + skip, len(dist))
+            if self.spin_checked:
+                up_to = min(self.n_neighbors + skip, len(dist))
+            else:
+                up_to = len(dist)
+
             if skip >= up_to:
                 self.Warning.all_data_as_reference()
                 return None
