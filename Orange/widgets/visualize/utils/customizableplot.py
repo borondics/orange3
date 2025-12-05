@@ -245,6 +245,7 @@ class CommonParameterSetter:
     LABELS_BOX = "Fonts"
     ANNOT_BOX = "Annotations"
     PLOT_BOX = "Figure"
+    LINE_BOX = "Curves"
 
     FONT_FAMILY_LABEL = "Font family"
     AXIS_TITLE_LABEL = "Axis title"
@@ -299,6 +300,9 @@ class CommonParameterSetter:
             Updater.update_axis_title_text(
                 self.getAxis(axis), settings[self.TITLE_LABEL])
 
+        def update_lines(**settings):
+            Updater.update_lines(self.line_items, **settings)
+
         self.FONT_FAMILY_SETTING: SettingsType = {  # pylint: disable=invalid-name
             Updater.FONT_FAMILY_LABEL: (available_font_families(), default_font_family()),
         }
@@ -324,6 +328,9 @@ class CommonParameterSetter:
                 self.TITLE_LABEL: update_title_text,
                 self.X_AXIS_LABEL: lambda **kw: update_axis("bottom", **kw),
                 self.Y_AXIS_LABEL: lambda **kw: update_axis("left", **kw),
+            },
+            self.LINE_BOX: {
+                self.LINE_LABEL: update_lines,
             }
         }
 
